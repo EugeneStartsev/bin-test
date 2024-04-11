@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
+	"time"
 )
 
 func main() {
@@ -26,16 +28,23 @@ func main() {
 		}
 	}()
 
+	wg := &sync.WaitGroup{}
+
 	for i := 0; i < 1000; i++ {
-		startReq()
+		wg.Add(1)
+		time.Sleep(30 * time.Millisecond)
+		go startReq(wg)
 	}
+
+	wg.Wait()
 
 	signch := make(chan os.Signal)
 	signal.Notify(signch, os.Interrupt)
 	<-signch
 }
 
-func startReq() {
+func startReq(wg *sync.WaitGroup) {
+	defer wg.Done()
 	url := fmt.Sprintf("http://localhost:4444/bin-checker?bin=%d", 518683)
 
 	req, _ := http.NewRequest("GET", url, nil)
