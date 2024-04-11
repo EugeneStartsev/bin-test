@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -24,6 +25,7 @@ func main() {
 
 	for i := 0; i < 1000; i++ {
 		wg.Add(1)
+		time.Sleep(30 * time.Millisecond)
 		go startReq(wg)
 	}
 

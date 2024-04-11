@@ -58,7 +58,5 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(binData)
-
-	//c.JSON(http.StatusOK, binData)
+	c.JSON(http.StatusOK, binData)
 }
