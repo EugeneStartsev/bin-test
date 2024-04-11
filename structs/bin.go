@@ -14,7 +14,6 @@ type Country struct {
 	Alpha2 string `json:"alpha2,omitempty"`
 	Alpha3 string `json:"alpha3,omitempty"`
 	Name   string `json:"name,omitempty"`
-	Emoji  string `json:"emoji,omitempty"`
 }
 
 type Bank struct {
