@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"sync"
 )
 
 func main() {
@@ -19,14 +20,25 @@ func main() {
 		}
 	}()
 
+	wg := &sync.WaitGroup{}
+
 	for i := 0; i < 1000; i++ {
-		url := fmt.Sprintf("http://localhost:4444/bin-checker?bin=%d", 518683)
+		wg.Add(1)
+		go startReq(wg)
+	}
 
-		req, _ := http.NewRequest("GET", url, nil)
+	wg.Wait()
+}
 
-		_, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
+func startReq(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	url := fmt.Sprintf("http://localhost:4444/bin-checker?bin=%d", 518683)
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	_, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
