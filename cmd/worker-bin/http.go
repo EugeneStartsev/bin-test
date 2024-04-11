@@ -10,17 +10,23 @@ import (
 )
 
 type httpServer struct {
+	id     int
 	router *gin.Engine
 }
 
-func newHttpServer() *httpServer {
-	s := httpServer{
-		router: gin.Default(),
+func newHttpServers(count int, engine *gin.Engine) []*httpServer {
+	servers := make([]*httpServer, 0, 5)
+
+	for i := 0; i < count; i++ {
+		s := httpServer{
+			id:     i + 1,
+			router: engine,
+		}
+
+		servers = append(servers, &s)
 	}
 
-	s.router.GET("/bin-checker", s.handleGetBin)
-
-	return &s
+	return servers
 }
 
 func (s *httpServer) run(listenAddr string) error {

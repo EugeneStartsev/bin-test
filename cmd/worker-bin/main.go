@@ -11,10 +11,15 @@ import (
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	s := newHttpServer()
+	g := gin.Default()
+
+	servers := newHttpServers(5, g)
+	balancer := newBalancer(servers)
+
+	g.GET("/bin-checker", balancer.handleGetByBalancer)
 
 	go func() {
-		err := s.run(fmt.Sprintf(":%d", 4444))
+		err := g.Run(":4444")
 		if err != nil {
 			log.Fatal(err)
 		}
