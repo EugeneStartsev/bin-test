@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -11,8 +12,21 @@ func main() {
 
 	s := newHttpServer()
 
-	err := s.run(fmt.Sprintf(":%d", 4000))
-	if err != nil {
-		log.Fatal(err)
+	go func() {
+		err := s.run(fmt.Sprintf(":%d", 4444))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	for i := 0; i < 1000; i++ {
+		url := fmt.Sprintf("http://localhost:4444/bin-checker?bin=%d", 518683)
+
+		req, _ := http.NewRequest("GET", url, nil)
+
+		_, err := http.DefaultClient.Do(req)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }

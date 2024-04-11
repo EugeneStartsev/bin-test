@@ -32,24 +32,21 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		Bin int `form:"bin"`
 	}
 
-	var binData structs.Bin2
+	var binData structs.BinData
 
 	if err := c.ShouldBindQuery(&query); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	if (query.Bin < 100000) || (query.Bin > 999999) {
+	if (query.Bin < 100000) || (query.Bin > 99999999) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
-	url := fmt.Sprintf("https://bin-ip-checker.p.rapidapi.com/?bin=%d", query.Bin)
+	url := fmt.Sprintf("https://binlist.io/lookup/%d", query.Bin)
 
-	req, _ := http.NewRequest("POST", url, nil)
-
-	req.Header.Add("X-RapidAPI-Key", "4963f1d9afmshe0620822d03e013p1a907ejsn85b8b5ec5e91")
-	req.Header.Add("X-RapidAPI-Host", "bin-ip-checker.p.rapidapi.com")
+	req, _ := http.NewRequest("GET", url, nil)
 
 	res, _ := http.DefaultClient.Do(req)
 	defer res.Body.Close()
@@ -61,5 +58,7 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, binData)
+	fmt.Println(binData)
+
+	//c.JSON(http.StatusOK, binData)
 }
