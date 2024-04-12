@@ -8,28 +8,28 @@ import (
 
 type memCache struct {
 	m     sync.RWMutex
-	cache map[string]structs.BinData
+	cache map[string]structs.SaveBinData
 }
 
 func newMemCache() *memCache {
 	return &memCache{
-		cache: make(map[string]structs.BinData),
+		cache: make(map[string]structs.SaveBinData),
 	}
 }
 
-func (c *memCache) set(key string, value structs.BinData) {
+func (c *memCache) set(key string, value structs.SaveBinData) {
 	c.m.Lock()
 	c.cache[key] = value
 	c.m.Unlock()
 }
 
-func (c *memCache) get(key string) (structs.BinData, bool) {
+func (c *memCache) get(key string) (structs.SaveBinData, bool) {
 	c.m.RLock()
 	val, ok := c.cache[key]
 	c.m.RUnlock()
 
 	if !ok {
-		return structs.BinData{}, false
+		return structs.SaveBinData{}, false
 	}
 
 	return val, true
@@ -42,7 +42,7 @@ func (c *memCache) recoverFromPostgres(stor storage) error {
 	}
 
 	for _, val := range binData {
-		c.set(val.Bin, val)
+		c.set(val.Iin, val)
 	}
 
 	return nil

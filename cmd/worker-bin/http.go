@@ -43,7 +43,7 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		Bin int `form:"bin"`
 	}
 
-	var binData structs.BinData
+	var binData structs.SaveBinData
 
 	if err := c.ShouldBindQuery(&query); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -67,7 +67,7 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		return
 	}
 
-	if binData.Bin != "" {
+	if binData.Iin != "" {
 		c.JSON(http.StatusOK, binData)
 		return
 	}
@@ -93,7 +93,7 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 	}
 
-	s.cache.set(binData.Bin, binData)
+	s.cache.set(binData.Number.Iin, binData)
 
 	c.JSON(http.StatusOK, binData)
 }

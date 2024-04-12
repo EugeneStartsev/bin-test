@@ -21,8 +21,8 @@ func newDb(dbConn *string) (storage, error) {
 	return storage{goqu.New("postgres", postgres)}, nil
 }
 
-func (s *storage) getBin(binId string) (structs.BinData, error) {
-	var binData structs.BinData
+func (s *storage) getBin(binId string) (structs.SaveBinData, error) {
+	var binData structs.SaveBinData
 
 	found, err := s.db.
 		Select(
@@ -42,27 +42,16 @@ func (s *storage) getBin(binId string) (structs.BinData, error) {
 	}
 
 	if !found {
-		return structs.BinData{}, err
+		return structs.SaveBinData{}, err
 	}
 
 	return binData, nil
 }
 
 func (s *storage) saveBin(binData structs.SaveBinData) error {
-	res := structs.BinData{
-		Bin:      binData.Number.Iin,
-		Brand:    binData.Scheme,
-		Type:     binData.Type,
-		Category: binData.Category,
-		Issuer:   binData.Bank.Name,
-		Alpha2:   binData.Country.Alpha2,
-		Alpha3:   binData.Country.Alpha2,
-		Country:  binData.Country.Name,
-	}
-
 	_, err := s.db.
 		From("bin_data").
-		Insert().Rows(res).
+		Insert().Rows(binData).
 		Executor().
 		Exec()
 	if err != nil {
@@ -72,8 +61,8 @@ func (s *storage) saveBin(binData structs.SaveBinData) error {
 	return nil
 }
 
-func (s *storage) getAllBinsFromPostgres() ([]structs.BinData, error) {
-	var bins []structs.BinData
+func (s *storage) getAllBinsFromPostgres() ([]structs.SaveBinData, error) {
+	var bins []structs.SaveBinData
 
 	err := s.db.Select(
 		goqu.C("bin-id"),
