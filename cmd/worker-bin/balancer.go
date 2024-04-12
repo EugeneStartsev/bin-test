@@ -6,7 +6,7 @@ import (
 )
 
 type Balancer struct {
-	m       sync.Mutex
+	m       sync.RWMutex
 	servers []*httpServer
 	current int
 }
@@ -18,8 +18,8 @@ func newBalancer(servers []*httpServer) *Balancer {
 }
 
 func (b *Balancer) getNextServer() *httpServer {
-	b.m.Lock()
-	defer b.m.Unlock()
+	b.m.RLock()
+	defer b.m.RUnlock()
 
 	server := b.servers[b.current]
 	b.current = (b.current + 1) % len(b.servers)
