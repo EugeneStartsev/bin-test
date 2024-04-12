@@ -1,13 +1,18 @@
 package structs
 
-type BinData struct {
-	Number   Number  `json:"number"`
-	Scheme   string  `json:"scheme,omitempty"`
-	Type     string  `json:"type,omitempty"`
-	Category string  `json:"category,omitempty"`
-	Country  Country `json:"country"`
-	Bank     Bank    `json:"bank"`
-	Success  bool    `json:"success,omitempty"`
+type SaveBinData struct {
+	Number      *Number  `json:"number,omitempty"`
+	Iin         string   `json:"bin-id" db:"bin-id"`
+	Scheme      string   `json:"scheme,omitempty" db:"brand"`
+	Type        string   `json:"type,omitempty" db:"type"`
+	Category    string   `json:"category,omitempty" db:"category"`
+	Issuer      string   `json:"issuer,omitempty" db:"issuer"`
+	Alpha2      string   `json:"alpha2,omitempty" db:"alpha_2"`
+	Alpha3      string   `json:"alpha3,omitempty" db:"alpha_3"`
+	CountryName string   `json:"country_name,omitempty" db:"country"`
+	CountryInfo *Country `json:"country_info,omitempty"`
+	Bank        *Bank    `json:"bank,omitempty"`
+	Success     bool     `json:"success,omitempty"`
 }
 
 type Country struct {

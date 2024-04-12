@@ -1,32 +1,47 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
 )
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
 
-	s := newHttpServer()
+	g := gin.Default()
+
+	dbConn := flag.String("db",
+		"host=localhost dbname=bin user=bin password=bin sslmode=disable",
+		"database connection string")
+	httpPort := flag.Int("http-port", 4444, "HTTP API port")
+	flag.Parse()
+
+	stor, err := newDb(dbConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cache := newMemCache()
+
+	err = cache.recoverFromPostgres(stor)
+
+	servers := newHttpServers(5, g, stor, cache)
+	balancer := newBalancer(servers)
+
+	g.GET("/bin-checker", balancer.handleGetByBalancer)
 
 	go func() {
-		err := s.run(fmt.Sprintf(":%d", 4444))
+		err = g.Run(fmt.Sprintf(":%d", *httpPort))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	for i := 0; i < 1000; i++ {
-		url := fmt.Sprintf("http://localhost:4444/bin-checker?bin=%d", 518683)
-
-		req, _ := http.NewRequest("GET", url, nil)
-
-		_, err := http.DefaultClient.Do(req)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	signch := make(chan os.Signal)
+	signal.Notify(signch, os.Interrupt)
+	<-signch
 }

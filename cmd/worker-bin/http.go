@@ -7,20 +7,31 @@ import (
 	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 type httpServer struct {
+	id     int
 	router *gin.Engine
+	stor   storage
+	cache  *memCache
 }
 
-func newHttpServer() *httpServer {
-	s := httpServer{
-		router: gin.Default(),
+func newHttpServers(count int, engine *gin.Engine, stor storage, cache *memCache) []*httpServer {
+	servers := make([]*httpServer, 0, 5)
+
+	for i := 0; i < count; i++ {
+		s := httpServer{
+			id:     i + 1,
+			router: engine,
+			stor:   stor,
+			cache:  cache,
+		}
+
+		servers = append(servers, &s)
 	}
 
-	s.router.GET("/bin-checker", s.handleGetBin)
-
-	return &s
+	return servers
 }
 
 func (s *httpServer) run(listenAddr string) error {
@@ -32,7 +43,7 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		Bin int `form:"bin"`
 	}
 
-	var binData structs.BinData
+	var binData structs.SaveBinData
 
 	if err := c.ShouldBindQuery(&query); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -44,6 +55,25 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 		return
 	}
 
+	binData, ok := s.cache.get(strconv.Itoa(query.Bin))
+	if ok {
+		c.JSON(http.StatusOK, binData)
+		return
+	}
+
+	binData, err := s.stor.getBin(strconv.Itoa(query.Bin))
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	if binData.Iin != "" {
+		c.JSON(http.StatusOK, binData)
+		return
+	}
+
+	var saveBinData structs.SaveBinData
+
 	url := fmt.Sprintf("https://binlist.io/lookup/%d", query.Bin)
 
 	req, _ := http.NewRequest("GET", url, nil)
@@ -52,13 +82,18 @@ func (s *httpServer) handleGetBin(c *gin.Context) {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	err := json.Unmarshal(body, &binData)
+	err = json.Unmarshal(body, &saveBinData)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
-	fmt.Println(binData)
+	err = s.stor.saveBin(saveBinData)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+	}
 
-	//c.JSON(http.StatusOK, binData)
+	s.cache.set(binData.Number.Iin, binData)
+
+	c.JSON(http.StatusOK, binData)
 }
