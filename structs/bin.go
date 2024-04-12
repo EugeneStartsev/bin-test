@@ -1,6 +1,17 @@
 package structs
 
 type BinData struct {
+	Bin      string `json:"bin,omitempty" db:"bin-id"`
+	Brand    string `json:"brand" db:"brand"`
+	Type     string `json:"type" db:"type"`
+	Category string `json:"category" db:"category"`
+	Issuer   string `json:"issuer" db:"issuer"`
+	Alpha2   string `json:"alpha2" db:"alpha_2"`
+	Alpha3   string `json:"alpha_3" db:"alpha_3"`
+	Country  string `json:"country" db:"country"`
+}
+
+type SaveBinData struct {
 	Number   Number  `json:"number"`
 	Scheme   string  `json:"scheme,omitempty"`
 	Type     string  `json:"type,omitempty"`
@@ -14,6 +25,7 @@ type Country struct {
 	Alpha2 string `json:"alpha2,omitempty"`
 	Alpha3 string `json:"alpha3,omitempty"`
 	Name   string `json:"name,omitempty"`
+	Emoji  string `json:"emoji,omitempty"`
 }
 
 type Bank struct {
